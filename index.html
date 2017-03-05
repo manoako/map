@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<title>ボロノイ図 - 最近傍探索</title>
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css"/>
+<style>
+html, body{
+    padding: 0px;
+    margin:  0px;
+    width:100%;
+    height: 100%;
+}
+#map {
+  width:100%;
+  height: 100%;
+}
+</style>
+</head>
+
+<body>
+<p>testmano</p>
+<!-- debug用
+Click on the map
+<input name="volonoi_togle" type="radio" value="true">show
+<input name="volonoi_togle"  type="radio" value="false" checked="checked">hidden
+-->
+<div id="map"></div>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet-src.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/d3/4.1.1/d3.min.js"></script>    
+<script>
+// ユーザーの端末がGeoLocation APIに対応しているかの判定
+
+// 対応している場合
+if( navigator.geolocation )
+{
+	// 現在地を取得
+	navigator.geolocation.getCurrentPosition(
+
+		// [第1引数] 取得に成功した場合の関数
+		function( position )
+		{
+			// 取得したデータの整理
+			var data = position.coords ;
+
+			// データの整理
+			var lat = data.latitude ;
+			var lng = data.longitude ;
+			var alt = data.altitude ;
+			var accLatlng = data.accuracy ;
+			var accAlt = data.altitudeAccuracy ;
+			var heading = data.heading ;			//0=北,90=東,180=南,270=西
+			var speed = data.speed ;
+
+			// アラート表示
+//			alert( "あなたの現在位置は、\n[" + lat + "," + lng + "]\nです。" ) ;
+
+			// HTMLへの書き出し
+			document.getElementById( 'result' ).innerHTML = '<dl><dt>緯度</dt><dd>' + lat + '</dd><dt>経度</dt><dd>' + lng + '</dd><dt>高度</dt><dd>' + alt + '</dd><dt>緯度、経度の精度</dt><dd>' + accLatlng + '</dd><dt>高度の精度</dt><dd>' + accAlt + '</dd><dt>方角</dt><dd>' + heading + '</dd><dt>速度</dt><dd>' + speed + '</dd></dl>' ;
+
+			// 位置情報
+			var latlng = new google.maps.LatLng( lat , lng ) ;
+
+			// Google Mapsに書き出し
+			var map = new google.maps.Map( document.getElementById( 'map-canvas' ) , {
+				zoom: 15 ,				// ズーム値
+				center: latlng ,		// 中心座標 [latlng]
+			} ) ;
+
+			// マーカーの新規出力
+			new google.maps.Marker( {
+				map: map ,
+				position: latlng ,
+			} ) ;
+		},
+
+		// [第2引数] 取得に失敗した場合の関数
+		function( error )
+		{
+			// エラーコード(error.code)の番号
+			// 0:UNKNOWN_ERROR				原因不明のエラー
+			// 1:PERMISSION_DENIED			利用者が位置情報の取得を許可しなかった
+			// 2:POSITION_UNAVAILABLE		電波状況などで位置情報が取得できなかった
+			// 3:TIMEOUT					位置情報の取得に時間がかかり過ぎた…
+
+			// エラー番号に対応したメッセージ
+			var errorInfo = [
+				"原因不明のエラーが発生しました…。" ,
+				"位置情報の取得が許可されませんでした…。" ,
+				"電波状況などで位置情報が取得できませんでした…。" ,
+				"位置情報の取得に時間がかかり過ぎてタイムアウトしました…。"
+			] ;
+
+			// エラー番号
+			var errorNo = error.code ;
+
+			// エラーメッセージ
+			var errorMessage = "[エラー番号: " + errorNo + "]\n" + errorInfo[ errorNo ] ;
+
+			// アラート表示
+			alert( errorMessage ) ;
+
+			// HTMLに書き出し
+			document.getElementById("result").innerHTML = errorMessage;
+		} ,
+
+		// [第3引数] オプション
+		{
+			"enableHighAccuracy": false,
+			"timeout": 8000,
+			"maximumAge": 2000,
+		}
+
+	) ;
+}
+
+// 対応していない場合
+else
+{
+	// エラーメッセージ
+	var errorMessage = "お使いの端末は、GeoLacation APIに対応していません。" ;
+
+	// アラート表示
+	alert( errorMessage ) ;
+
+	// HTMLに書き出し
+	document.getElementById( 'result' ).innerHTML = errorMessage ;
+}
+</script>
+<script>
+!(function(){
+    "use strict"
+        
+    var map = L.map("map")
+    var markers    
+    
+    L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png', {
+      attribution: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+    }).addTo(map);
+    
+    map.setView([35.6894875, 139.69170639999993], 14)
+    
+    map._initPathRoot()
+    
+    var svg = d3.select("#map").select("svg")
+    
+    var voloLayer = svg.append("g")
+        .attr("class", "leaflet-zoom-hide")
+        .attr("id", "voloLayer")
+        
+        
+    
+    
+    var cast = function(d){
+        Object.keys(d).forEach(function(key){
+            if (!isNaN(+d[key])) d[key] = +d[key]
+        })
+        return d
+    }
+    
+    d3.tsv("data.tsv", cast, main)
+    
+    function main(data) {
+        
+        var positions = getPositions(data)
+               
+        addMakers(positions)
+        drawVolonoi(positions)
+        setEvent(data)
+    }
+    
+     
+    function getPositions(data) {
+        var result = []
+        //位置情報→座標変換
+        data.forEach(function(d) {
+            var latlng = new L.LatLng(d["Y"], d["X"])                    
+            result.push({
+                "id": d.id,
+                latlng: latlng
+            })
+        })
+        
+        return result
+        
+    }  
+    
+    function addMakers(positions) {
+        positions.forEach(function(d){
+            L.marker(d.latlng).addTo(map)
+        })
+    }
+    
+    
+    function setEvent(data) {
+        map.on("viewreset moveend", function(){
+            d3.selectAll(".saitan").remove()
+            var positions = getPositions(data)
+            drawVolonoi(positions)	
+        })
+            
+        var volonoi_toggle = function(){
+            if(this.value === "true"){
+                d3.selectAll(".volonoi").attr("stroke-opacity", 1)
+            }else{
+                d3.selectAll(".volonoi").attr("stroke-opacity", 0)			
+            }
+        }
+        
+        var elm = d3.selectAll("input[name=volonoi_togle]")
+        elm.on("change", volonoi_toggle)    
+        
+    }
+    
+    
+    function drawVolonoi(data){
+        
+        data.forEach(function(d){
+            d.x = map.latLngToLayerPoint(d.latlng).x
+            d.y = map.latLngToLayerPoint(d.latlng).y
+        })
+    
+        var voronoi = d3.voronoi()
+            .x(function(d) { return d.x })
+            .y(function(d) { return d.y })
+            
+        
+        var polygons = voronoi(data).polygons()
+    
+        voloLayer.selectAll(".volonoi").remove()
+        
+        voloLayer.selectAll("path")
+            .data(polygons)
+            .enter()
+            .append("svg:path")
+            .attr("class", "volonoi")
+            .attr("id", function(d, i){
+                return "volo"+ i
+            })
+            .attr("d", function(d){
+                if(!d) return null
+                return "M" + d.filter(function(dd){ return dd != null}).join("L") + "Z"
+            })
+            .attr("stroke", "black")
+            .attr("stroke-opacity", 0)		
+            .attr("fill", "white")
+            .attr("fill-opacity", 0)
+            .on("click", function(d){
+                voloLayer.selectAll(".saitan").remove()
+                addCircle(d.data.x, d.data.y, 20)
+                var mouseXY = d3.mouse(this)
+                addLine(d.data.x, d.data.y, mouseXY[0], mouseXY[1])
+                addCircle(mouseXY[0], mouseXY[1], 4)						
+            })
+            
+        var elm = document.querySelector("input[name=volonoi_togle]:checked")
+        if(elm.value === "true"){
+            d3.selectAll(".volonoi").attr("stroke-opacity", 1)
+        }else{
+            d3.selectAll(".volonoi").attr("stroke-opacity", 0)			
+        }
+            
+            
+    }
+    
+    
+    function addCircle(x, y, r){
+        voloLayer.append("circle")
+            .attr("class", "saitan")
+            .attr("cx", x)
+            .attr("cy", y)
+            .attr("r", 0)
+            .transition()
+            .attr("cx", x)
+            .attr("cy", y)
+            .attr("r", r)
+            .attr("fill", "none")
+            .attr("stroke", "red")
+            .attr("stroke-width", 5)
+    }
+    
+    function addLine(x1, y1, x2, y2){
+            voloLayer.append("line")
+                .attr("class", "saitan")
+                .attr("x1", x2)
+                .attr("y1", y2)
+                .attr("x2", x2)
+                .attr("y2", y2)
+                .transition()
+                .attr("x1", x1)
+                .attr("y1", y1)
+                .attr("x2", x2)
+                .attr("y2", y2)
+                .attr("stroke", "red")
+                .attr("stroke-width", 5)
+    }
+     
+}());
+</script>
+    
+</body>
+</html>
