@@ -117,6 +117,7 @@ function init(lat,lng){
     map.setView([lat,lng], 14)
 	
     var marker = L.marker([lat, lng]).addTo(map);
+	marker.bindPopup("<b>Hello world!</b><br>I am a popup.").openPopup();
     
  //   map._initPathRoot()
     
