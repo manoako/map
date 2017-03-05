@@ -46,13 +46,13 @@ if( navigator.geolocation )
 			var data_cur = position.coords ;
 
 			// データの整理
-			var lat_cur = data.latitude ;
-			var lng_cur = data.longitude ;
-			var alt_cur = data.altitude ;
-			var accLatlng = data.accuracy ;
-			var accAlt = data.altitudeAccuracy ;
-			var heading = data.heading ;			//0=北,90=東,180=南,270=西
-			var speed = data.speed ;
+			var lat_cur = data_cur.latitude ;
+			var lng_cur = data_cur.longitude ;
+			var alt_cur = data_cur.altitude ;
+			var accLatlng = data_cur.accuracy ;
+			var accAlt = data_cur.altitudeAccuracy ;
+			var heading = data_cur.heading ;			//0=北,90=東,180=南,270=西
+			var speed = data_cur.speed ;
 			
 			alert( "あなたの現在位置は、\n[" + lat_cur + "," + lng_cur + "]\nです。" ) ;
 			
