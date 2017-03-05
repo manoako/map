@@ -171,17 +171,6 @@ function init(lat,lng){
             drawVolonoi(positions)	
         })
             
-        var volonoi_toggle = function(){
-            if(this.value === "true"){
-                d3.selectAll(".volonoi").attr("stroke-opacity", 1)
-            }else{
-                d3.selectAll(".volonoi").attr("stroke-opacity", 0)			
-            }
-        }
-        
-        var elm = d3.selectAll("input[name=volonoi_togle]")
-        elm.on("change", volonoi_toggle)    
-        
     }
     
     
@@ -224,14 +213,6 @@ function init(lat,lng){
                 addLine(d.data.x, d.data.y, mouseXY[0], mouseXY[1])
                 addCircle(mouseXY[0], mouseXY[1], 4)						
             })
-            
-        var elm = document.querySelector("input[name=volonoi_togle]:checked")
-        if(elm.value === "true"){
-            d3.selectAll(".volonoi").attr("stroke-opacity", 1)
-        }else{
-            d3.selectAll(".volonoi").attr("stroke-opacity", 0)			
-        }
-            
             
     }
     
