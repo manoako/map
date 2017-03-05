@@ -54,9 +54,11 @@ if( navigator.geolocation )
 			var heading = data.heading ;			//0=北,90=東,180=南,270=西
 			var speed = data.speed ;
 			
-			alert(lat_cur,lng_cur);
+			var checkmsg = "[エラー番号: " + lat_cur + lng_cur"]\n"  ;
+			
+			//alert(lat_cur,lng_cur)
 
-			init(lat_cur,lng_cur);
+			init(lat_cur,lng_cur)
 		},
 
 		// [第2引数] 取得に失敗した場合の関数
