@@ -60,7 +60,7 @@ if( navigator.geolocation )
 			
 
 			init(lat_cur,lng_cur)
-			d3.tsv("data.tsv", cast, main)
+//			d3.tsv("data.tsv", cast, main)
 
 		},
 
@@ -118,7 +118,7 @@ function init(lat,lng){
 	
     var marker = L.marker([lat, lng]).addTo(map);
     
-    map._initPathRoot()
+ //   map._initPathRoot()
     
     var svg = d3.select("#map").select("svg")
     
@@ -136,7 +136,7 @@ function init(lat,lng){
         return d
     }
     
-//    d3.tsv("data.tsv", cast, main)
+    d3.tsv("data.tsv", cast, main)
     
     function main(data) {
         
