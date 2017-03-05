@@ -60,6 +60,8 @@ if( navigator.geolocation )
 			
 
 			init(lat_cur,lng_cur)
+			d3.tsv("data.tsv", cast, main)
+
 		},
 
 		// [第2引数] 取得に失敗した場合の関数
@@ -134,7 +136,7 @@ function init(lat,lng){
         return d
     }
     
-    d3.tsv("data.tsv", cast, main)
+//    d3.tsv("data.tsv", cast, main)
     
     function main(data) {
         
