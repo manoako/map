@@ -234,71 +234,7 @@ else
         voloLayer.selectAll("path")
             .data(polygons)
             .enter()
-            .append("svg:path")
-            .attr("class", "volonoi")
-            .attr("id", function(d, i){
-                return "volo"+ i
-            })
-            .attr("d", function(d){
-                if(!d) return null
-                return "M" + d.filter(function(dd){ return dd != null}).join("L") + "Z"
-            })
-            .attr("stroke", "black")
-            .attr("stroke-opacity", 0)		
-            .attr("fill", "white")
-            .attr("fill-opacity", 0)
-            .on("click", function(d){
-                voloLayer.selectAll(".saitan").remove()
-                addCircle(d.data.x, d.data.y, 20)
-                var mouseXY = d3.mouse(this)
-                addLine(d.data.x, d.data.y, mouseXY[0], mouseXY[1])
-                addCircle(mouseXY[0], mouseXY[1], 4)						
-            })
-            
-        var elm = document.querySelector("input[name=volonoi_togle]:checked")
-        if(elm.value === "true"){
-            d3.selectAll(".volonoi").attr("stroke-opacity", 1)
-        }else{
-            d3.selectAll(".volonoi").attr("stroke-opacity", 0)			
-        }
-            
-            
-    }
-    
-    
-    function addCircle(x, y, r){
-        voloLayer.append("circle")
-            .attr("class", "saitan")
-            .attr("cx", x)
-            .attr("cy", y)
-            .attr("r", 0)
-            .transition()
-            .attr("cx", x)
-            .attr("cy", y)
-            .attr("r", r)
-            .attr("fill", "none")
-            .attr("stroke", "red")
-            .attr("stroke-width", 5)
-    }
-    
-    function addLine(x1, y1, x2, y2){
-            voloLayer.append("line")
-                .attr("class", "saitan")
-                .attr("x1", x2)
-                .attr("y1", y2)
-                .attr("x2", x2)
-                .attr("y2", y2)
-                .transition()
-                .attr("x1", x1)
-                .attr("y1", y1)
-                .attr("x2", x2)
-                .attr("y2", y2)
-                .attr("stroke", "red")
-                .attr("stroke-width", 5)
-    }
-     
-}());
-</script>
+
     
 </body>
 </html>
