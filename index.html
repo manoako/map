@@ -173,8 +173,8 @@ function init(lat,lng){
     
     function addMakers(positions) {
         positions.forEach(function(d){
-            L.marker(d.latlng).addTo(map);
-	marker.bindPopup(d.latlng).openPopup();
+            L.marker(d.latlng).addTo(map)
+//	marker.bindPopup(d.latlng).openPopup();
         })
     }
     
