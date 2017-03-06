@@ -15,7 +15,7 @@ html, body{
 }
 #map {
   width:100%;
-  height: 180px;
+  height: 100%;
 }
 </style>
 </head>
@@ -110,7 +110,7 @@ function init(lat,lng){
     var map = L.map("map")
     var markers    
     
-    L.tileLayer('http://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png', {
+    L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png', {
       attribution: "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
     }).addTo(map);
     
