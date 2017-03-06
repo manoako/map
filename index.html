@@ -184,7 +184,7 @@ function init(lat,lng){
         map.on("viewreset moveend", function(){
             d3.selectAll(".saitan").remove()
             var positions = getPositions(data)
-//            drawVolonoi(positions)	
+            drawVolonoi(positions)	
         })
             
     }
