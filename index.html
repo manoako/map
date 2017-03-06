@@ -174,7 +174,7 @@ function init(lat,lng){
     function addMakers(positions) {
         positions.forEach(function(d){
             L.marker(d.latlng).addTo(map)
-               .bindPopup(d.latlng + 'A pretty CSS3 popup.<br> Easily customizable.')
+               .bindPopup(d.latlng)
                .openPopup();
         })
     }
